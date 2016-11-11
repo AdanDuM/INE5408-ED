@@ -201,15 +201,14 @@ class ArrayList {
 
 template<typename T>
 ArrayList<T>::ArrayList() :
-    max_size_{DEFAULT_SIZE} 
+    max_size_{DEFAULT_SIZE}
 {
-	//max_size_ = DEFAULT_SIZE;
 	contents = new T[DEFAULT_SIZE];
 }
 
 template<typename T>
 ArrayList<T>::ArrayList(std::size_t max_size) :
-    max_size_{max_size} 
+    max_size_{max_size}
 {
 	contents = new T[max_size_];
 }
@@ -229,7 +228,7 @@ void ArrayList<T>::push_back(T data) {
 	if (full()) {
 		throw std::out_of_range("Erro: Estrutura Cheia.");
 	} else {
-		contents[++size_] = data;
+		contents[size_++] = data;
 	}
 }
 
@@ -237,8 +236,12 @@ template<typename T>
 void ArrayList<T>::push_front(T data) {
 	if (full()) {
 		throw std::out_of_range("Erro: Estrutura Cheia.");
+	} else if (empty()) {
+	    contents[size_++] = data;
 	} else {
-		insert(data, 0);
+		go_backward(index);
+        contents[index] = data;
+        ++size_;
 	}
 }
 
@@ -246,13 +249,15 @@ template<typename T>
 void ArrayList<T>::insert(T data, std::size_t index) {
 	if (full()) {
         throw std::out_of_range("Erro: Estrutura cheia.");
+	} else if (index < 0 or index > size_ - 1) {
+		throw std::out_of_range("Erro: Posicao invalida.");
 	} else {
-	    if (index < 0 or index > size_) {
-			throw std::out_of_range("Erro: Posicao invalida.");
+	    if (empty()) {
+	        contents[size_++] = data;
 		} else {
-            ++size_;
             go_backward(index);
             contents[index] = data;
+            ++size_;
 		}
 	}
 }
@@ -261,6 +266,8 @@ template<typename T>
 void ArrayList<T>::insert_sorted(T data) {
     if (full()) {
         throw std::out_of_range("Erro: Estrutura cheia.");
+    } else if (empty()) {
+        contents[size_++] = data;
     } else {
         std::size_t i = 0;
         while (i != size_ && data > contents[i]) {
@@ -275,9 +282,8 @@ T ArrayList<T>::pop(std::size_t index) {
 	if (index > size_ || index < 0) {
 		throw std::out_of_range("Erro: Posicao invalida.");
 	} else {
-        T tmp;
+        T tmp = contents[index];
 	    --size_;
-		tmp = contents[index];
 		go_forward(index);
 		return tmp;
 	}
@@ -297,18 +303,17 @@ T ArrayList<T>::pop_back() {
 	if (empty()) {
 		throw std::out_of_range("Erro: Estrutura Vazia");
 	} else {
-	    T tmp;
-		tmp = contents[size_--];
+	    T tmp = contents[size_--];
 		return tmp;
 	}
 }
 
 template<typename T>
 void ArrayList<T>::remove(T data) {
-	if (!contains(data)) {
-		throw std::invalid_argument("Erro: Dado inexistente.");
-	} else {
-		pop(data);
+	for (auto i = 0u; i != size_; ++i) {
+	    if (contents[i] == data) {
+	        pop(i);
+	    }
 	}
 }
 
@@ -324,36 +329,22 @@ bool ArrayList<T>::empty() const {
 
 template<typename T>
 bool ArrayList<T>::contains(const T& data) const {
-	if ( !empty() ) {
-		std::size_t i = 0;
-		bool encontrou = false;
-		while ( i != size_ && !encontrou ) {
-			if ( contents[i] == data ) {
-				return true;
-			}
-			++i;
-		}
-		return false;
-	} else {
-		return false;
+	for (auto i = 0u; i != size_; ++i) {
+	    if (contents[i] == data) {
+	        return true;
+	    }
 	}
+	return false;
 }
 
 template<typename T>
 std::size_t ArrayList<T>::find(const T& data) const {
-    std::size_t i = 0u;
-    if (empty()) {
-        throw std::out_of_range("Erro: Estrutura vazia.");
-    } else {
-		while (contents[i] != data && i != size_ + 1) {
-			i++;
-		}
-		if ( i > size_ ) {
-		    return size_ + 1;
-		} else {
-		    return i;
-		}
+    for (auto i = 0u; i != size_; ++i) {
+	    if (contents[i] == data) {
+	        return i;
+	    }
 	}
+	return size_;
 }
 
 template<typename T>
@@ -382,24 +373,31 @@ T& ArrayList<T>::operator[](std::size_t index) {
 
 template<typename T>
 const T& ArrayList<T>::at(std::size_t index) const {
-    at(index);
+    // return at(index);
+    // return contents[index];
+    if (index < 0 || index > max_size_) {
+		throw std::out_of_range("Erro: Posicao invalida.");
+	} else {
+		return contents[index];
+	}
 }
 
 template<typename T>
 const T& ArrayList<T>::operator[](std::size_t index) const {
-    return operator[](index);
+    // return operator[](index);
+    return contents[index];
 }
 
 template<typename T>
 void ArrayList<T>::go_backward(int index) {
-	for (std::size_t i = size_; i != index; --i) {
+	for (auto i = size_; i != index; --i) {
 		contents[i] = contents[i - 1];
 	}
 }
 
 template<typename T>
 void ArrayList<T>::go_forward(int index) {
-	for (std::size_t i = index; i != size_; ++i) {
+	for (auto i = index; i != size_; ++i) {
 		contents[i] = contents[i + 1];
 	}
 }
