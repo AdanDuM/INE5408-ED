@@ -215,7 +215,7 @@ ArrayList<T>::ArrayList(std::size_t max_size) :
 
 template<typename T>
 ArrayList<T>::~ArrayList() {
-	delete contents;
+	delete[] contents;
 }
 
 template<typename T>
